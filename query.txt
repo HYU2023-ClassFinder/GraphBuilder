@@ -1,0 +1,5 @@
+-- select count(*)-- from course -> 5252 
+select lID, course.name, course.star, cnt 
+from ( select row_number() over (order by count(*) desc) as rownum, lectureId as lID, count(*) as cnt 
+ from review, course where course.id = review.lectureId 
+ group by lectureId), coursewhere rownum <= 52 and star >= 4.0 and course.id = lID
