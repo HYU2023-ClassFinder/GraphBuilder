@@ -87,12 +87,25 @@ cur = conn.cursor()
 #         where rownum <= 52 and star >= 4.0 and course.id = lID
 #         '''
 query = '''
-        select course.name, tag.tagDetail
-        from course, tag
-        where course.id = tag.lectureId and regCount >= ''' + regsThreshold + ''' and star >= ''' + starThreshhold + '''
-        '''
+select course.name, tag.tagDetail, course.star, course.regCount
+from course, tag
+where course.id = tag.lectureId and regCount >= ''' + regsThreshold + ''' and star >= ''' + starThreshhold + '''
+'''
+minMaxQuery = '''
+select min(star), max(star), min(regCount), max(regCount)
+from course, tag
+where course.id = tag.lectureId and regCount >= 1000 and star >= 4.5
+'''
 cur.execute(query)
 recommendingCandidates = cur.fetchall()
+
+cur.execute(minMaxQuery)
+minMax = cur.fetchall()
+
+minStar = minMax[0][0]
+maxStar = minMax[0][1]
+minRegs = minMax[0][2]
+maxRegs = minMax[0][3]
 
 path = nx.shortest_path(G, a, b)
 recommedingCourses = [[] for _ in path]
@@ -101,7 +114,7 @@ for i in list(range(len(path))):
     for recommendingCandidate in recommendingCandidates:
         try:
             if(mappedTagv2[recommendingCandidate[1].replace(' ', '_')] == path[i]):
-                recommedingCourses[i].append(recommendingCandidate[0])
+                recommedingCourses[i].append((recommendingCandidate[0], (recommendingCandidate[2]-minStar)/(maxStar-minStar), (recommendingCandidate[3]-minRegs)/(maxRegs-minRegs)))
         except KeyError:
             continue
 
@@ -111,9 +124,16 @@ mappedTagv2 = dict(map(reversed, mappedTagv2.items()))
 path = list(map(tempFunc, path))
 
 print("Curriculum: ", path)
+print("-----------------------------")
 for i in list(range(len(recommedingCourses))):
     print("for ", path[i])
     recommedingCourses[i] = list(set(recommedingCourses[i]))
-    for j in list(range(len(recommedingCourses[i]))):
-        print(recommedingCourses[i][j])
+    recommedingCourses[i].sort(key=lambda x : -(x[1]+x[2]))
+
+    if(len(recommedingCourses[i]) < 5):
+        for j in list(range(len(recommedingCourses[i]))):
+            print(recommedingCourses[i][j][0], (recommedingCourses[i][j][1]+recommedingCourses[i][j][2])/2)
+    else:
+        for j in list(range(0, 5)):
+            print(recommedingCourses[i][j][0], (recommedingCourses[i][j][1]+recommedingCourses[i][j][2])/2)
     print("-----------------------------")
