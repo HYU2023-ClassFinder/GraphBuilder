@@ -10121,7 +10121,7 @@
             neighbors = nx.relabel_nodes(neighbors, mappedTagv2_codeToTag)
             union = nx.relabel_nodes(union, mappedTagv2_codeToTag)
         
-            if(k == 0):
+            if(k == 2):
                 nx.draw_networkx_nodes(neighbors, pos=pos, node_size=75, node_color='grey')
                 nx.draw_networkx_labels(neighbors, pos=pos, font_size=7, font_color='black')
                 nx.draw_networkx_edges(union, pos=pos, edge_color='lightgrey')
