@@ -8757,24 +8757,21 @@
         for subT in subTs:
             subG.add_edge(subT[0], subT[1], weight=subT[2])
         
-        a = "python"
-        b = "gpt"
-        starThreshhold = "0"
-        regsThreshold = "0"
+        # a = "python"
+        # b = "gpt"
+        # starThreshhold = "0"
+        # regsThreshold = "0"
         
-        print("From: ", end="")
-        # a = input()
+        a = input()
+        print("From: ", a, end="")
         a = a.replace(' ', '_').upper()
         a = mappedTagv3[a]
-        print("To: ", end="")
-        # b = input()
+        
+        b = input()
+        print("To: ", b, end="")
         b = b.replace(' ', '_').upper()
         b = mappedTagv3[b]
         
-        print("starThreshhold: ", end="")
-        # starThreshhold = input()
-        print("regsThreshold: ", end="")
-        # regsThreshold = input()
         try:
             pathList = []
             X = nx.shortest_simple_paths(G, a, b)
@@ -8791,7 +8788,6 @@
         path = [] if len(pathList) < 1 else pathList[0]
         secondPath = [] if len(pathList) < 2 else pathList[1]
         thirdPath = [] if len(pathList) < 3 else pathList[2]
-        print(path)
         
         # tagMappingv2_codeToTag = open("tagMappingv2_codeToTag.json", 'r')
         # mappedTagv2_codeToTag = dict(json.load(tagMappingv2_codeToTag))
@@ -10092,8 +10088,13 @@
             "Kalman_filter": "Q846780"
         }
         mappedTagv2_codeToTag = dict(map(reversed, mappedTagv2_codeToTag.items()))
+        
         def tempFunc(x):
             return mappedTagv2_codeToTag[x]
+        
+        print(list(map(tempFunc, path)))
+        print(list(map(tempFunc, secondPath)))
+        print(list(map(tempFunc, thirdPath)))
         
         codeG = G.copy()
         tagG = nx.relabel_nodes(codeG, mappedTagv2_codeToTag)
@@ -10101,7 +10102,7 @@
         
         recommedingCourses = [[] for _ in path]
         
-        for k in list(range(len(pathList))):
+        for k in list(range(len(pathList)-1, -1, -1)):
             codePath = pathList[k].copy()
             _path = list(map(tempFunc, pathList[k]))
             mains = G.subgraph(codePath)
@@ -10124,18 +10125,19 @@
                 nx.draw_networkx_nodes(neighbors, pos=pos, node_size=75, node_color='grey')
                 nx.draw_networkx_labels(neighbors, pos=pos, font_size=7, font_color='black')
                 nx.draw_networkx_edges(union, pos=pos, edge_color='lightgrey')
+            if(k == 2):
+                nx.draw_networkx_nodes(mains, pos=pos, node_size=375, node_color='pink') 
+                nx.draw_networkx_labels(mains, pos=pos, font_size=7, font_color='red')
+                nx.draw_networkx_edges(mains, pos=pos, edge_color='red')
             if(k == 1):
                 nx.draw_networkx_nodes(mains, pos=pos, node_size=375, node_color='yellowgreen') 
                 nx.draw_networkx_labels(mains, pos=pos, font_size=7, font_color='green')
                 nx.draw_networkx_edges(mains, pos=pos, edge_color='green')
-            if(k == 2):
+            if(k == 0):
                 nx.draw_networkx_nodes(mains, pos=pos, node_size=375, node_color='skyblue') 
                 nx.draw_networkx_labels(mains, pos=pos, font_size=7, font_color='blue')
                 nx.draw_networkx_edges(mains, pos=pos, edge_color='blue')
-            if(k == 0):
-                nx.draw_networkx_nodes(mains, pos=pos, node_size=375, node_color='pink') 
-                nx.draw_networkx_labels(mains, pos=pos, font_size=7, font_color='red')
-                nx.draw_networkx_edges(mains, pos=pos, edge_color='red')
+            
             
         pyscript.write('graph', fig)
     </py-script>
