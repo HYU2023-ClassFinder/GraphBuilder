@@ -2,7 +2,6 @@ import networkx as nx
 from networkx import NetworkXNoPath
 import csv
 import matplotlib.pyplot as plt
-import random
 import sqlite3
 import json
 
@@ -67,19 +66,24 @@ for subE in subEs:
 for subT in subTs:
     subG.add_edge(subT[0], subT[1], weight=subT[2])
 
+a = "python"
+b = "gpt"
+starThreshhold = 0
+regsThreshold = 0
+
 print("From: ", end="")
-a = input()
+# a = input()
 a = a.replace(' ', '_').upper()
 a = mappedTagv3[a]
 print("To: ", end="")
-b = input()
+# b = input()
 b = b.replace(' ', '_').upper()
 b = mappedTagv3[b]
 
 print("starThreshhold: ", end="")
-starThreshhold = input()
+# starThreshhold = input()
 print("regsThreshold: ", end="")
-regsThreshold = input()
+# regsThreshold = input()
 
 conn = sqlite3.connect("CScourseDB_EngTag.db")
 cur = conn.cursor()

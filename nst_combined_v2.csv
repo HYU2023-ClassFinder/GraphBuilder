@@ -6790,4 +6790,4 @@ triple_name,score,triple_incidence,head_rate,tail_rate,labeled_class,predicted_c
 "cryptography	computer_programs/algorithms",1,-1,-1,-1,1,1
 "Machine_learning	computer_programs/algorithms",1,-1,-1,-1,1,1
 "Computer_graphics	computer_programs/algorithms",1,-1,-1,-1,1,1
-"Programming_language	Data_structure",1,-1,-1,-1,1,1
+"Programming_language	Data_structure",1,-1,-1,-1,1,1]
