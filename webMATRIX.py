@@ -116,6 +116,8 @@ def tempFunc3(x):
 
 print("==========================================================")
 for k in list(range(len(pathList)-1, -1, -1)):
+	recommedingCourses = [[] for _ in list(range(len(pathList[k])))]
+
 	print(str(k) + " " + str(list(map(tempFunc, pathList[k]))))
 	for i in list(range(len(pathList[k]))):
 		for recommendingCandidate in recommendingCandidates:
@@ -126,7 +128,7 @@ for k in list(range(len(pathList)-1, -1, -1)):
 				continue
 
 	print("==========================================================")
-	for i in list(range(len(recommedingCourses))):
+	for i in list(range(len(pathList[k]))):
 		print("for " + tempFunc(pathList[k][i]) + " " + pathList[k][i])
 		recommedingCourses[i] = list(set(recommedingCourses[i]))
 		recommedingCourses[i].sort(key=lambda x : -(x[1]+x[2]))

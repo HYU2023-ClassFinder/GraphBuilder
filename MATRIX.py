@@ -66,24 +66,19 @@ for subE in subEs:
 for subT in subTs:
     subG.add_edge(subT[0], subT[1], weight=subT[2])
 
-a = "python"
-b = "gpt"
-starThreshhold = 0
-regsThreshold = 0
+# a = "python"
+# b = "gpt"
+# starThreshhold = 0
+# regsThreshold = 0
 
 print("From: ", end="")
-# a = input()
+a = input()
 a = a.replace(' ', '_').upper()
 a = mappedTagv3[a]
 print("To: ", end="")
-# b = input()
+b = input()
 b = b.replace(' ', '_').upper()
 b = mappedTagv3[b]
-
-print("starThreshhold: ", end="")
-# starThreshhold = input()
-print("regsThreshold: ", end="")
-# regsThreshold = input()
 
 conn = sqlite3.connect("CScourseDB_EngTag.db")
 cur = conn.cursor()
@@ -99,12 +94,12 @@ cur = conn.cursor()
 query = '''
 select course.name, tag.tagDetail, course.star, course.regCount
 from course, tag
-where course.id = tag.lectureId and regCount >= ''' + regsThreshold + ''' and star >= ''' + starThreshhold + '''
+where course.id = tag.lectureId
 '''
 minMaxQuery = '''
 select min(star), max(star), min(regCount), max(regCount)
 from course, tag
-where course.id = tag.lectureId and regCount >= ''' + regsThreshold + ''' and star >= ''' + starThreshhold + '''
+where course.id = tag.lectureId
 '''
 cur.execute(query)
 recommendingCandidates = cur.fetchall()
@@ -120,7 +115,7 @@ maxRegs = minMax[0][3]
 try:
     pathList = []
     X = nx.shortest_simple_paths(G, a, b)
-    k = 4
+    k = 3
     for counter, path in enumerate(X):
         pathList.append(path)
         if counter == k-1:
@@ -134,6 +129,9 @@ path = [] if len(pathList) < 1 else pathList[0]
 secondPath = [] if len(pathList) < 2 else pathList[1]
 thirdPath = [] if len(pathList) < 3 else pathList[2]
 
+for _path in pathList:
+    print(_path)
+
 tagMappingv2_codeToTag = open("tagMappingv2_codeToTag.json", 'r')
 mappedTagv2_codeToTag = dict(json.load(tagMappingv2_codeToTag))
 tagMappingv2_codeToTag.close()
@@ -145,9 +143,9 @@ codeG = G.copy()
 tagG = nx.relabel_nodes(codeG, mappedTagv2_codeToTag)
 pos = nx.spring_layout(tagG)
 
-recommedingCourses = [[] for _ in path]
-
 for k in list(range(len(pathList))):
+    recommedingCourses = [[] for _ in list(range(len(pathList[k])))]
+
     print(k, list(map(tempFunc, pathList[k])))
     for i in list(range(len(pathList[k]))):
         for recommendingCandidate in recommendingCandidates:
@@ -158,7 +156,7 @@ for k in list(range(len(pathList))):
                 continue
 
     print("-----------------------------")
-    for i in list(range(len(recommedingCourses))):
+    for i in list(range(len(pathList[k]))):
         print("for ", tempFunc(pathList[k][i]))
         recommedingCourses[i] = list(set(recommedingCourses[i]))
         recommedingCourses[i].sort(key=lambda x : -(x[1]+x[2]))
