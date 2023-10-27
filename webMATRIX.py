@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from dataMappedTagv2 import *
 from dataNstCombv2 import *
 from dataMappedTagv2_codeToTag import *
-from dataRecommendingCandidates.py import *
+from dataRecommendingCandidates import *
 
 fig, ax = plt.subplots()
 
@@ -67,19 +67,19 @@ for subT in subTs:
 # regsThreshold = "0"
 
 a = input()
-print("From: ", a, end="")
+print("From: " + a)
 a = a.replace(' ', '_').upper()
 a = mappedTagv3[a]
 
 b = input()
-print("To: ", b, end="")
+print("To: " + b)
 b = b.replace(' ', '_').upper()
 b = mappedTagv3[b]
 
 try:
 	pathList = []
 	X = nx.shortest_simple_paths(G, a, b)
-	k = 4
+	k = 3
 	for counter, path in enumerate(X):
 		pathList.append(path)
 		if counter == k-1:
@@ -112,32 +112,32 @@ def tempFunc2(x):
 	return x.replace(' ', '_').upper()
 
 def tempFunc3(x):
-	return mappedTagv2[x]
+	return mappedTagv3[x]
 
+print("==========================================================")
 for k in list(range(len(pathList)-1, -1, -1)):
-	print(k, list(map(tempFunc, pathList[k])))
-    for i in list(range(len(pathList[k]))):
-        for recommendingCandidate in recommendingCandidates:
-            try:
-				if()
-                if(pathList[k][i] in list(map(tempFunc3, recommendingCandidate[3]))):
-                    recommedingCourses[i].append((recommendingCandidate[0], (recommendingCandidate[1])/(5), (recommendingCandidate[2])/(1418723)))
-            except KeyError:
-                continue
+	print(str(k) + " " + str(list(map(tempFunc, pathList[k]))))
+	for i in list(range(len(pathList[k]))):
+		for recommendingCandidate in recommendingCandidates:
+			try:
+				if(pathList[k][i] in list(map(tempFunc3, list(map(tempFunc2, recommendingCandidate[3]))))):
+					recommedingCourses[i].append((recommendingCandidate[0], (recommendingCandidate[1])/(5), (recommendingCandidate[2])/(1418723)))
+			except KeyError:
+				continue
 
-    print("-----------------------------")
-    for i in list(range(len(recommedingCourses))):
-        print("for ", tempFunc(pathList[k][i]))
-        recommedingCourses[i] = list(set(recommedingCourses[i]))
-        recommedingCourses[i].sort(key=lambda x : -(x[1]+x[2]))
+	print("==========================================================")
+	for i in list(range(len(recommedingCourses))):
+		print("for " + tempFunc(pathList[k][i]) + " " + pathList[k][i])
+		recommedingCourses[i] = list(set(recommedingCourses[i]))
+		recommedingCourses[i].sort(key=lambda x : -(x[1]+x[2]))
 
-        if(len(recommedingCourses[i]) < 5):
-            for j in list(range(len(recommedingCourses[i]))):
-                print(recommedingCourses[i][j][0], (recommedingCourses[i][j][1]+recommedingCourses[i][j][2])/2)
-        else:
-            for j in list(range(0, 5)):
-                print(recommedingCourses[i][j][0], (recommedingCourses[i][j][1]+recommedingCourses[i][j][2])/2)
-        print("-----------------------------")
+		if(len(recommedingCourses[i]) < 5):
+			for j in list(range(len(recommedingCourses[i]))):
+				print(recommedingCourses[i][j][0] + " " + str((recommedingCourses[i][j][1]+recommedingCourses[i][j][2])/2))
+		else:
+			for j in list(range(0, 5)):
+				print(recommedingCourses[i][j][0] + " " + str((recommedingCourses[i][j][1]+recommedingCourses[i][j][2])/2))
+		print("----------------------------------------------------------")
 
 	codePath = pathList[k].copy()
 	_path = list(map(tempFunc, pathList[k]))
@@ -157,7 +157,7 @@ for k in list(range(len(pathList)-1, -1, -1)):
 	neighbors = nx.relabel_nodes(neighbors, mappedTagv2_codeToTag)
 	union = nx.relabel_nodes(union, mappedTagv2_codeToTag)
 
-	if(k == 0):
+	if(k == 2):
 		nx.draw_networkx_nodes(neighbors, pos=pos, node_size=75, node_color='grey')
 		nx.draw_networkx_labels(neighbors, pos=pos, font_size=7, font_color='black')
 		nx.draw_networkx_edges(union, pos=pos, edge_color='lightgrey')
@@ -173,6 +173,4 @@ for k in list(range(len(pathList)-1, -1, -1)):
 		nx.draw_networkx_nodes(mains, pos=pos, node_size=375, node_color='skyblue') 
 		nx.draw_networkx_labels(mains, pos=pos, font_size=7, font_color='blue')
 		nx.draw_networkx_edges(mains, pos=pos, edge_color='blue')
-	
-	
 pyscript.write('graph', fig)
