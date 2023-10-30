@@ -25,7 +25,7 @@ triples = []
 subEs = []
 subTs = []
 
-trivial = ["Programming_language", "Computer_programming", "Computer_science", "Computer", "Image", "Integer", "academic_discipline", "field_of_study", "Personal_computer", "Application_software", "Robot"]
+trivial = ["Programming_language", "computer_programming", "Computer_programming", "Computer_science", "Computer", "Image", "Integer", "academic_discipline", "field_of_study", "Personal_computer", "Application_software", "Robot"]
 # trivial = []
 
 for line in rdr:
@@ -121,8 +121,10 @@ try:
         if counter == k-1:
             break
 except NetworkXNoPath:
+    print("No path between", a, "and", b)
     pathList = []
 except nx.exception.NodeNotFound:
+    print("No", a, "or", b)
     pathList = []
 
 path = [] if len(pathList) < 1 else pathList[0]
@@ -143,7 +145,7 @@ codeG = G.copy()
 tagG = nx.relabel_nodes(codeG, mappedTagv2_codeToTag)
 pos = nx.spring_layout(tagG)
 
-for k in list(range(len(pathList))):
+for k in list(range(len(pathList)-1, -1, -1)):
     recommedingCourses = [[] for _ in list(range(len(pathList[k])))]
 
     print(k, list(map(tempFunc, pathList[k])))
@@ -186,22 +188,25 @@ for k in list(range(len(pathList))):
     mains = nx.relabel_nodes(mains, mappedTagv2_codeToTag)
     neighbors = nx.relabel_nodes(neighbors, mappedTagv2_codeToTag)
     union = nx.relabel_nodes(union, mappedTagv2_codeToTag)
-
-    if(k == 0):
+    startAndEnd = G.subgraph([codePath[0], codePath[-1]])
+    startAndEnd = nx.relabel_nodes(startAndEnd, mappedTagv2_codeToTag)
+    
+    if(k == 2):
         nx.draw_networkx_nodes(neighbors, pos=pos, node_size=75, node_color='grey')
         nx.draw_networkx_labels(neighbors, pos=pos, font_size=7, font_color='black')
         nx.draw_networkx_edges(union, pos=pos, edge_color='lightgrey')
+    if(k == 2):
+        nx.draw_networkx_nodes(mains, pos=pos, node_size=375, node_color='pink') 
+        nx.draw_networkx_labels(mains, pos=pos, font_size=7, font_color='red')
+        nx.draw_networkx_edges(mains, pos=pos, edge_color='red')
     if(k == 1):
         nx.draw_networkx_nodes(mains, pos=pos, node_size=375, node_color='yellowgreen') 
         nx.draw_networkx_labels(mains, pos=pos, font_size=7, font_color='green')
         nx.draw_networkx_edges(mains, pos=pos, edge_color='green')
-    if(k == 2):
+    if(k == 0):
+        nx.draw_networkx_nodes(startAndEnd, pos=pos, node_size=425, node_color='blue') 
         nx.draw_networkx_nodes(mains, pos=pos, node_size=375, node_color='skyblue') 
         nx.draw_networkx_labels(mains, pos=pos, font_size=7, font_color='blue')
         nx.draw_networkx_edges(mains, pos=pos, edge_color='blue')
-    if(k == 0):
-        nx.draw_networkx_nodes(mains, pos=pos, node_size=375, node_color='pink') 
-        nx.draw_networkx_labels(mains, pos=pos, font_size=7, font_color='red')
-        nx.draw_networkx_edges(mains, pos=pos, edge_color='red')
     
 plt.show()

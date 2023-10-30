@@ -264,6 +264,8 @@
                     mains = nx.relabel_nodes(mains, mappedTagv2_codeToTag)
                     neighbors = nx.relabel_nodes(neighbors, mappedTagv2_codeToTag)
                     union = nx.relabel_nodes(union, mappedTagv2_codeToTag)
+                    startAndEnd = G.subgraph([codePath[0], codePath[-1]])
+                    startAndEnd = nx.relabel_nodes(startAndEnd, mappedTagv2_codeToTag)
 
                     if (k == 2):
                         nx.draw_networkx_nodes(
@@ -284,6 +286,7 @@
                             mains, pos=pos, font_size=7, font_color='green')
                         nx.draw_networkx_edges(mains, pos=pos, edge_color='green')
                     if (k == 0):
+                        nx.draw_networkx_nodes(startAndEnd, pos=pos, node_size=425, node_color='blue') 
                         nx.draw_networkx_nodes(
                             mains, pos=pos, node_size=375, node_color='skyblue')
                         nx.draw_networkx_labels(
