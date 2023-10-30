@@ -1,0 +1,7 @@
+{
+  "packages": ["matplotlib", "networkx"],
+  "files": {
+    "data.json": "./data.json",
+    "main.py": "./main.py"
+  }
+}

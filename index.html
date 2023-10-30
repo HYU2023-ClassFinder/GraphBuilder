@@ -1,0 +1,309 @@
+<html>
+  <head>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+      crossorigin="anonymous"
+    ></script>
+    <link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script defer src="https://pyscript.net/alpha/pyscript.js"></script>
+    <script id="data" type="application/json" src="./data.json"></script>
+    <script type="text/javascript">
+        window.onload = function() {
+            // console.log("data loaded");
+            // console.log(document.getElementById("data").textContent);
+            $.getJSON("/data.json", function(json) {
+                console.log(json);
+                // var data = JSON.parse(document.getElementById("data").textContent);
+                var tags_sorted = json.tags_sorted;
+                window.tags_sorted = tags_sorted;
+                console.log("tags_sorted");
+                console.log(tags_sorted);
+            });
+        };
+        document.addEventListener("DOMContentLoaded", function() {
+        });
+    </script>
+    <script type="text/javascript" src="./suggest.js"></script>
+    <py-env>
+      - matplotlib
+      - networkx
+      - paths:
+        - ./data.json
+        - ./main.py
+        - ./dataMappedTagv2.py
+        - ./dataNstCombv2.py
+        - ./dataMappedTagv2_codeToTag.py
+        - ./dataRecommendingCandidates.py
+    </py-env>
+  </head>
+  <body>
+    <div class="container">
+        <div class="row g-3">
+            <h1 class="h1 mt-4">Path Finder</h1>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="input-start" class="form-label">Start learning from:</label>
+                <input
+                class="form-control"
+                list="input-start-options"
+                type="text"
+                id="input-start"
+                onkeyup="suggest_input('input-start')"
+                placeholder="Search for tags.."
+                title="Type in a name"
+                />
+                <datalist id="input-start-options"></datalist>
+            </div>
+            <div class="col-md-6">
+                <label for="input-end" class="form-label">Learn towards:</label>
+                <input
+                class="form-control"
+                list="input-end-options"
+                type="text"
+                id="input-end"
+                onkeyup="suggest_input('input-end')"
+                placeholder="Search for tags.."
+                title="Type in a name"
+                />
+                <datalist id="input-end-options"></datalist>
+            </div>
+            <div class="col">
+                <button class="btn btn-primary" id="draw-graph-btn">Draw Graph</button>
+            </div>
+        </div>
+        <div class="row">
+            <div id="graph"></div>
+        </div>
+        <div class="row" id="recommendations">
+        </div>
+        <py-script>
+            import networkx as nx
+            from networkx import NetworkXNoPath
+            import matplotlib.pyplot as plt
+            import json
+            from pyodide import create_proxy
+
+            in_file = open("data.json", "r")
+            in_str = in_file.read()
+            in_file.close()
+            data = json.loads(in_str)
+
+            entities = data["entities"]
+            subEs = data["sub_entities"]
+            triples = data["triples"]
+            subTs = data["sub_triples"]
+            mappedTagv2_codeToTag = data["mapped_tags_code_to_tag"]
+            mappedTagv3 = data["mapped_tags"]
+            recommendingCandidates = data["recommending_candidates"]
+            tags_sorted = data["tags_sorted"]
+
+            def drawGraph(a: str, b: str):
+                global mappedTagv2_codeToTag
+                fig, ax = plt.subplots()
+
+                G = nx.DiGraph()
+                subG = nx.DiGraph()
+
+                for entity in entities:
+                    G.add_node(entity)
+                for triple in triples:
+                    G.add_edge(triple[0], triple[1], weight=triple[2])
+
+                for subE in subEs:
+                    subG.add_node(subE)
+                for subT in subTs:
+                    subG.add_edge(subT[0], subT[1], weight=subT[2])
+
+                # a = "python"
+                # b = "gpt"
+                # starThreshhold = "0"
+                # regsThreshold = "0"
+
+                print("From: " + a)
+                a = a.replace(' ', '_').upper()
+                a = mappedTagv3[a]
+
+                print("To: " + b)
+                b = b.replace(' ', '_').upper()
+                b = mappedTagv3[b]
+
+                try:
+                    pathList = []
+                    X = nx.shortest_simple_paths(G, a, b)
+                    k = 3
+                    for counter, path in enumerate(X):
+                        pathList.append(path)
+                        if counter == k-1:
+                            break
+                except NetworkXNoPath:
+                    pathList = []
+                except nx.exception.NodeNotFound:
+                    pathList = []
+
+                path = [] if len(pathList) < 1 else pathList[0]
+                secondPath = [] if len(pathList) < 2 else pathList[1]
+                thirdPath = [] if len(pathList) < 3 else pathList[2]
+
+                mappedTagv2_codeToTag = dict(map(reversed, mappedTagv2_codeToTag.items()))
+
+                def tempFunc(x):
+                    return mappedTagv2_codeToTag[x]
+
+                print(list(map(tempFunc, path)))
+                print(list(map(tempFunc, secondPath)))
+                print(list(map(tempFunc, thirdPath)))
+
+                codeG = G.copy()
+                tagG = nx.relabel_nodes(codeG, mappedTagv2_codeToTag)
+                pos = nx.spring_layout(tagG)
+
+                recommedingCourses = [[] for _ in path]
+
+                def tempFunc2(x):
+                    return x.replace(' ', '_').upper()
+
+                def tempFunc3(x):
+                    return mappedTagv3[x]
+
+                rec = document.getElementById("recommendations")
+                rec.innerHTML = ""
+                print("==========================================================")
+                for k in list(range(0, len(pathList))):
+                    recommedingCourses = [[] for _ in list(range(len(pathList[k])))]
+                    h1 = document.createElement("h1")
+                    h1.className = "h1 m-2"
+                    h1.innerHTML = "Path " + str(k+1)
+                    rec.appendChild(h1)
+                    h2 = document.createElement("b")
+                    h2.className = "m-2"
+                    h2.innerHTML = (":".join(list(map(tempFunc, pathList[k])))).replace("_", " ").replace(":", " - ")
+                    rec.appendChild(h2)
+                    print(str(k) + " " + str(list(map(tempFunc, pathList[k]))))
+                    for i in list(range(len(pathList[k]))):
+                        for recommendingCandidate in recommendingCandidates:
+                            try:
+                                if (pathList[k][i] in list(map(tempFunc3, list(map(tempFunc2, recommendingCandidate[3]))))):
+                                    recommedingCourses[i].append(
+                                        (recommendingCandidate[0], (recommendingCandidate[1])/(5), (recommendingCandidate[2])/(1418723)))
+                            except KeyError:
+                                continue
+                                        
+                    print("==========================================================")
+                    for i in list(range(len(pathList[k]))):
+                        ul = document.createElement("ul")
+                        rec.appendChild(ul)
+                        ul.className = "list-group m-2"
+                        li = document.createElement("li")
+                        li.className = "list-group-item active"
+                        span1 = document.createElement("span")
+                        span1.innerHTML = "for "
+                        span2 = document.createElement("b")
+                        span2.innerHTML = tempFunc(pathList[k][i])
+                        span3 = document.createElement("span")
+                        span3.innerHTML = " " + pathList[k][i]
+                        li.appendChild(span1)
+                        li.appendChild(span2)
+                        li.appendChild(span3)
+                        ul.appendChild(li)
+                        
+                        print("for " + tempFunc(pathList[k][i]) + " " + pathList[k][i])
+                        recommedingCourses[i] = list(set(recommedingCourses[i]))
+                        recommedingCourses[i].sort(key=lambda x: -(x[1]+x[2]))
+
+                        if (len(recommedingCourses[i]) < 5):
+                            for j in list(range(len(recommedingCourses[i]))):
+                                li = document.createElement("li")
+                                ul.appendChild(li)
+                                li.className = "list-group-item"
+                                span1 = document.createElement("b")
+                                span1.innerHTML = recommedingCourses[i][j][0]
+                                span2 = document.createElement("span")
+                                span2.innerHTML = " " + str(
+                                    (recommedingCourses[i][j][1]+recommedingCourses[i][j][2])/2)
+                                li.appendChild(span1)
+                                li.appendChild(span2)
+                                ul.appendChild(li)
+                                print(recommedingCourses[i][j][0] + " " + str(
+                                    (recommedingCourses[i][j][1]+recommedingCourses[i][j][2])/2))
+                        else:
+                            for j in list(range(0, 5)):
+                                li = document.createElement("li")
+                                ul.appendChild(li)
+                                li.className = "list-group-item"
+                                span1 = document.createElement("b")
+                                span1.innerHTML = recommedingCourses[i][j][0]
+                                span2 = document.createElement("span")
+                                span2.innerHTML = " " + str(
+                                    (recommedingCourses[i][j][1]+recommedingCourses[i][j][2])/2)
+                                li.appendChild(span1)
+                                li.appendChild(span2)
+                                print(recommedingCourses[i][j][0] + " " + str(
+                                    (recommedingCourses[i][j][1]+recommedingCourses[i][j][2])/2))
+                        print("----------------------------------------------------------")
+
+                    codePath = pathList[k].copy()
+                    _path = list(map(tempFunc, pathList[k]))
+                    mains = G.subgraph(codePath)
+                    neighborhoods = [[] for _ in _path]
+                    for i in list(range(len(codePath))):
+                        for neighborhood in list(codeG.neighbors(codePath[i])):
+                            neighborhoods[i].append(
+                                (neighborhood, codeG[codePath[i]][neighborhood]["weight"]))
+                        neighborhoods[i].sort(key=lambda x: x[1])
+                        while (len(neighborhoods[i]) > 2):
+                            del neighborhoods[i][-1]
+                    neighborhoods = sum(neighborhoods, [])
+                    neighborhoods2 = [i[0] for i in neighborhoods]
+                    neighbors = G.subgraph(neighborhoods2)
+                    union = G.subgraph(codePath+neighborhoods2)
+                    mains = nx.relabel_nodes(mains, mappedTagv2_codeToTag)
+                    neighbors = nx.relabel_nodes(neighbors, mappedTagv2_codeToTag)
+                    union = nx.relabel_nodes(union, mappedTagv2_codeToTag)
+
+                    if (k == 2):
+                        nx.draw_networkx_nodes(
+                            neighbors, pos=pos, node_size=75, node_color='grey')
+                        nx.draw_networkx_labels(
+                            neighbors, pos=pos, font_size=7, font_color='black')
+                        nx.draw_networkx_edges(union, pos=pos, edge_color='lightgrey')
+                    if (k == 2):
+                        nx.draw_networkx_nodes(
+                            mains, pos=pos, node_size=375, node_color='pink')
+                        nx.draw_networkx_labels(
+                            mains, pos=pos, font_size=7, font_color='red')
+                        nx.draw_networkx_edges(mains, pos=pos, edge_color='red')
+                    if (k == 1):
+                        nx.draw_networkx_nodes(
+                            mains, pos=pos, node_size=375, node_color='yellowgreen')
+                        nx.draw_networkx_labels(
+                            mains, pos=pos, font_size=7, font_color='green')
+                        nx.draw_networkx_edges(mains, pos=pos, edge_color='green')
+                    if (k == 0):
+                        nx.draw_networkx_nodes(
+                            mains, pos=pos, node_size=375, node_color='skyblue')
+                        nx.draw_networkx_labels(
+                            mains, pos=pos, font_size=7, font_color='blue')
+                        nx.draw_networkx_edges(mains, pos=pos, edge_color='blue')
+                pyscript.write('graph', fig)
+            
+            def onButtonClick(stuff):
+                a = document.getElementById("input-start").value
+                b = document.getElementById("input-end").value
+                drawGraph(a, b)
+            
+            function_proxy = create_proxy(onButtonClick)
+            e = document.getElementById("draw-graph-btn")
+            e.addEventListener("click", function_proxy)
+        </py-script>
+    </div>
+  </body>
+</html>
