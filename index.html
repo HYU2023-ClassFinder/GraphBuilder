@@ -173,7 +173,7 @@
                 rec = document.getElementById("recommendations")
                 rec.innerHTML = ""
                 print("==========================================================")
-                for k in list(range(0, len(pathList))):
+                for k in list(range(len(pathList)-1, -1, -1)):
                     recommedingCourses = [[] for _ in list(range(len(pathList[k])))]
                     h1 = document.createElement("h1")
                     h1.className = "h1 m-2"
