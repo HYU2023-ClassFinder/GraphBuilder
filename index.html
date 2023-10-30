@@ -19,7 +19,7 @@
         window.onload = function() {
             // console.log("data loaded");
             // console.log(document.getElementById("data").textContent);
-            $.getJSON("/data.json", function(json) {
+            $.getJSON("/GraphBuilder/data.json", function(json) {
                 console.log(json);
                 // var data = JSON.parse(document.getElementById("data").textContent);
                 var tags_sorted = json.tags_sorted;
@@ -42,7 +42,8 @@
   <body>
     <div class="container">
         <div class="row g-3">
-            <h1 class="h1 mt-4">Path Finder</h1>
+            <h1 class="h1 mt-4">MATRIX</h1>
+            <h3 class="h3">Modern Algorithm for Teaching and Recommending Information eXpansion</h3>
         </div>
         <div class="row g-3">
             <div class="col-md-6">
