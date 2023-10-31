@@ -1,6 +1,4 @@
 {
-  "[python]": {
-    "editor.defaultFormatter": "ms-python.autopep8"
-  },
-  "python.formatting.provider": "none"
+  "python.defaultInterpreterPath": "C:\\Users\\SAMSUNG\\AppData\\Local\\Programs\\Python\\Python37\\python.exe",
+  "python.languageServer": "Pylance",
 }
