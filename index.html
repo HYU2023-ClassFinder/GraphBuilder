@@ -42,7 +42,7 @@
   <body>
     <div class="container">
         <div class="row g-3">
-            <h1 class="h1 mt-4">MATRIX v1.1.1</h1>
+            <h1 class="h1 mt-4">MATRIX v1.1.2</h1>
             <h3 class="h3">Modern Algorithm for Teaching and Recommending Information eXpansion</h3>
         </div>
         <div class="row g-3">
@@ -182,7 +182,7 @@
                 rec = document.getElementById("recommendations")
                 rec.innerHTML = ""
                 print("==========================================================")
-                for k in list(range(len(pathList),-1,-1)):
+                for k in list(range(len(pathList))):
                     recommedingCourses = [[] for _ in list(range(len(pathList[k])))]
                     h1 = document.createElement("h1")
                     h1.className = "h1 m-2"
