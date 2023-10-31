@@ -216,8 +216,8 @@ for k in list(range(len(pathList)-1, -1, -1)):
         for i in list(range(len(_path[k]))):
             # print(0, _path[k][i])
             pos[_path[k][i]] = [i-len(_path[k])/2, (-0.3)**i]
-pos[_path[0][0]] = [-len(_path[k])/2, 0]
-pos[_path[0][-1]] = [+len(_path[k])/2, 0]
+pos[_path[0][0]] = [-len(_path[0])/2, 0]
+pos[_path[0][-1]] = [+len(_path[0])/2, 0]
 
 for k in list(range(len(pathList)-1, -1, -1)):
     if(k == 2):
