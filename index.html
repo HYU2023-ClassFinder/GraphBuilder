@@ -160,7 +160,16 @@
 
                 codeG = G.copy()
                 tagG = nx.relabel_nodes(codeG, mappedTagv2_codeToTag)
-                pos = nx.spring_layout(tagG)
+                pos = nx.spring_layout(tagG, k=1)
+                
+                codePath = [[] for _ in list(range(len(pathList)))]
+                _path = [[] for _ in list(range(len(pathList)))]
+                mains = [[] for _ in list(range(len(pathList)))]
+                neighbors = [[] for _ in list(range(len(pathList)))]
+                neighborhoods = [[] for _ in list(range(len(pathList)))]
+                neighborhoods2 = [[] for _ in list(range(len(pathList)))]
+                union = [[] for _ in list(range(len(pathList)))]
+                startAndEnd = []
 
                 recommedingCourses = [[] for _ in path]
 
@@ -173,7 +182,7 @@
                 rec = document.getElementById("recommendations")
                 rec.innerHTML = ""
                 print("==========================================================")
-                for k in list(range(len(pathList)-1, -1, -1)):
+                for k in list(range(len(pathList))):
                     recommedingCourses = [[] for _ in list(range(len(pathList[k])))]
                     h1 = document.createElement("h1")
                     h1.className = "h1 m-2"
@@ -246,52 +255,61 @@
                                     (recommedingCourses[i][j][1]+recommedingCourses[i][j][2])/2))
                         print("----------------------------------------------------------")
 
-                    codePath = pathList[k].copy()
-                    _path = list(map(tempFunc, pathList[k]))
-                    mains = G.subgraph(codePath)
-                    neighborhoods = [[] for _ in _path]
-                    for i in list(range(len(codePath))):
-                        for neighborhood in list(codeG.neighbors(codePath[i])):
-                            neighborhoods[i].append(
-                                (neighborhood, codeG[codePath[i]][neighborhood]["weight"]))
-                        neighborhoods[i].sort(key=lambda x: x[1])
-                        while (len(neighborhoods[i]) > 2):
-                            del neighborhoods[i][-1]
-                    neighborhoods = sum(neighborhoods, [])
-                    neighborhoods2 = [i[0] for i in neighborhoods]
-                    neighbors = G.subgraph(neighborhoods2)
-                    union = G.subgraph(codePath+neighborhoods2)
-                    mains = nx.relabel_nodes(mains, mappedTagv2_codeToTag)
-                    neighbors = nx.relabel_nodes(neighbors, mappedTagv2_codeToTag)
-                    union = nx.relabel_nodes(union, mappedTagv2_codeToTag)
-                    startAndEnd = G.subgraph([codePath[0], codePath[-1]])
+                        codePath[k] = pathList[k].copy()
+                        _path[k] = list(map(tempFunc, pathList[k]))
+                        mains[k] = G.subgraph(codePath[k])
+                        neighborhoods[k] = [[] for _ in _path[k]]
+                        for i in list(range(len(codePath[k]))):
+                            for neighborhood in list(codeG.neighbors(codePath[k][i])):
+                                neighborhoods[k][i].append((neighborhood, codeG[codePath[k][i]][neighborhood]["weight"]))
+                            neighborhoods[k][i].sort(key=lambda x : x[1])
+                            while(len(neighborhoods[k][i]) > 2):
+                                del neighborhoods[k][i][-1]
+                        neighborhoods[k] = sum(neighborhoods[k], [])
+                        neighborhoods2[k] = [i[0] for i in neighborhoods[k]]
+                        neighbors[k] = G.subgraph(neighborhoods2[k])
+                        union[k] = G.subgraph(codePath[k]+neighborhoods2[k])
+                        mains[k] = nx.relabel_nodes(mains[k], mappedTagv2_codeToTag)
+                        neighbors[k] = nx.relabel_nodes(neighbors[k], mappedTagv2_codeToTag)
+                        union[k] = nx.relabel_nodes(union[k], mappedTagv2_codeToTag)
+                    
+                    startAndEnd = G.subgraph([codePath[0][0], codePath[0][-1]])
                     startAndEnd = nx.relabel_nodes(startAndEnd, mappedTagv2_codeToTag)
 
-                    if (k == 2):
-                        nx.draw_networkx_nodes(
-                            neighbors, pos=pos, node_size=75, node_color='grey')
-                        nx.draw_networkx_labels(
-                            neighbors, pos=pos, font_size=7, font_color='black')
-                        nx.draw_networkx_edges(union, pos=pos, edge_color='lightgrey')
-                    if (k == 2):
-                        nx.draw_networkx_nodes(
-                            mains, pos=pos, node_size=375, node_color='pink')
-                        nx.draw_networkx_labels(
-                            mains, pos=pos, font_size=7, font_color='red')
-                        nx.draw_networkx_edges(mains, pos=pos, edge_color='red')
-                    if (k == 1):
-                        nx.draw_networkx_nodes(
-                            mains, pos=pos, node_size=375, node_color='yellowgreen')
-                        nx.draw_networkx_labels(
-                            mains, pos=pos, font_size=7, font_color='green')
-                        nx.draw_networkx_edges(mains, pos=pos, edge_color='green')
-                    if (k == 0):
-                        nx.draw_networkx_nodes(startAndEnd, pos=pos, node_size=425, node_color='blue') 
-                        nx.draw_networkx_nodes(
-                            mains, pos=pos, node_size=375, node_color='skyblue')
-                        nx.draw_networkx_labels(
-                            mains, pos=pos, font_size=7, font_color='blue')
-                        nx.draw_networkx_edges(mains, pos=pos, edge_color='blue')
+                    for k in list(range(len(pathList)-1, -1, -1)):
+                        if(k == 2):
+                            for i in list(range(len(_path[k]))):
+                                # print(2, _path[k][i])
+                                pos[_path[k][i]] = [i-len(_path[k])/2, (-1)**i]
+                        if(k == 1):
+                            for i in list(range(len(_path[k]))):
+                                # print(1, _path[k][i])
+                                pos[_path[k][i]] = [i-len(_path[k])/2, 0.5*(-1)**i]
+                        if(k == 0):
+                            for i in list(range(len(_path[k]))):
+                                # print(0, _path[k][i])
+                                pos[_path[k][i]] = [i-len(_path[k])/2, (-0.3)**i]
+                    pos[_path[0][0]] = [-len(_path[k])/2, 0]
+                    pos[_path[0][-1]] = [+len(_path[k])/2, 0]
+
+                    for k in list(range(len(pathList)-1, -1, -1)):
+                        if(k == 2):
+                            nx.draw_networkx_nodes(neighbors[k], pos=pos, node_size=75, node_color='grey')
+                            nx.draw_networkx_labels(neighbors[k], pos=pos, font_size=7, font_color='black')
+                            nx.draw_networkx_edges(union[k], pos=pos, edge_color='lightgrey')
+                        if(k == 2):
+                            nx.draw_networkx_nodes(mains[k], pos=pos, node_size=375, node_color='pink') 
+                            nx.draw_networkx_labels(mains[k], pos=pos, font_size=7, font_color='red')
+                            nx.draw_networkx_edges(mains[k], pos=pos, edge_color='red')
+                        if(k == 1):
+                            nx.draw_networkx_nodes(mains[k], pos=pos, node_size=375, node_color='yellowgreen') 
+                            nx.draw_networkx_labels(mains[k], pos=pos, font_size=7, font_color='green')
+                            nx.draw_networkx_edges(mains[k], pos=pos, edge_color='green')
+                        if(k == 0):
+                            nx.draw_networkx_nodes(startAndEnd, pos=pos, node_size=425, node_color='blue') 
+                            nx.draw_networkx_nodes(mains[k], pos=pos, node_size=375, node_color='skyblue') 
+                            nx.draw_networkx_labels(mains[k], pos=pos, font_size=7, font_color='blue')
+                            nx.draw_networkx_edges(mains[k], pos=pos, edge_color='blue')
                 pyscript.write('graph', fig)
             
             def onButtonClick(stuff):
